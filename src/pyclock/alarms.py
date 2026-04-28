@@ -1,3 +1,5 @@
+"""Alarm persistence and scheduling."""
+
 from __future__ import annotations
 
 import json
@@ -12,14 +14,18 @@ from pyclock.domain import Alarm, Time
 from pyclock.exceptions import AlarmConflictError
 from pyclock.paths import default_alarms_path
 
+
 class AlarmRepository(ABC):
     @abstractmethod
     def list(self) -> tuple[Alarm, ...]:
+        """Return all persisted alarms."""
 
     @abstractmethod
     def save_all(self, alarms: tuple[Alarm, ...]) -> None:
+        """Replace all persisted alarms."""
 
     def add(self, at: Time, label: str = "", snooze_minutes: int = 5) -> Alarm:
+        """Add an alarm."""
         alarms = self.list()
         if any(alarm.enabled and alarm.at == at for alarm in alarms):
             msg = f"an enabled alarm already exists for {at:hm}"
@@ -29,16 +35,20 @@ class AlarmRepository(ABC):
         return alarm
 
     def remove(self, alarm_id: str) -> bool:
+        """Remove an alarm."""
         alarms = self.list()
         remaining = tuple(alarm for alarm in alarms if alarm.id != alarm_id)
         self.save_all(remaining)
         return len(remaining) != len(alarms)
 
+
 class JSONAlarmRepository(AlarmRepository):
     def __init__(self, path: Path | None = None) -> None:
+        """Initialize the JSON alarm repository."""
         self.path = path or default_alarms_path()
 
     def list(self) -> tuple[Alarm, ...]:
+        """Return all alarms."""
         if not self.path.exists():
             return ()
         with self.path.open("r", encoding="utf-8") as handle:
@@ -46,6 +56,7 @@ class JSONAlarmRepository(AlarmRepository):
         return tuple(_alarm_from_json(item) for item in raw)
 
     def save_all(self, alarms: tuple[Alarm, ...]) -> None:
+        """Save all alarms."""
         self.path.parent.mkdir(parents=True, exist_ok=True)
         payload = [
             {
@@ -61,21 +72,28 @@ class JSONAlarmRepository(AlarmRepository):
         with self.path.open("w", encoding="utf-8") as handle:
             json.dump(payload, handle, indent=2)
 
+
 class InMemoryAlarmRepository(AlarmRepository):
     def __init__(self, alarms: tuple[Alarm, ...] = ()) -> None:
+        """Initialize the in-memory alarm repository."""
         self._alarms = alarms
 
     def list(self) -> tuple[Alarm, ...]:
+        """Return all alarms."""
         return self._alarms
 
     def save_all(self, alarms: tuple[Alarm, ...]) -> None:
+        """Save all alarms."""
         self._alarms = alarms
+
 
 class AlarmScheduler:
     def __init__(self, repository: AlarmRepository) -> None:
+        """Initialize the alarm scheduler."""
         self.repository = repository
 
     def due(self, previous: datetime, current: datetime) -> tuple[Alarm, ...]:
+        """Return alarms that are due."""
         alarms = self.repository.list()
         due: list[Alarm] = []
         updated: list[Alarm] = []
@@ -97,6 +115,7 @@ class AlarmScheduler:
         return tuple(due)
 
     def _crossed_date(self, alarm: Alarm, previous: datetime, current: datetime) -> str | None:
+        """Check if an alarm has crossed the date."""
         day_count = (current.date() - previous.date()).days
         for offset in range(day_count + 1):
             day = previous.date() + timedelta(days=offset)
@@ -117,6 +136,7 @@ class AlarmScheduler:
         return None
 
     def snooze(self, alarm_id: str, now: datetime) -> Alarm | None:
+        """Snooze an alarm."""
         alarms = self.repository.list()
         updated: list[Alarm] = []
         snoozed: Alarm | None = None
@@ -134,7 +154,9 @@ class AlarmScheduler:
         self.repository.save_all(tuple(updated))
         return snoozed
 
+
 def _alarm_from_json(item: dict[str, object]) -> Alarm:
+    """Convert a JSON alarm to an Alarm object."""
     raw_time = item["at"]
     if not isinstance(raw_time, dict):
         msg = "alarm at field must be an object"
