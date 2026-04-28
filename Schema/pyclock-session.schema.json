@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.local/pyclock/session.schema.json",
+  "title": "PyClock Stopwatch Session Record",
+  "description": "Schema for one JSON object line in sessions.jsonl.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["ended_at", "elapsed_seconds", "laps"],
+  "properties": {
+    "ended_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 datetime when the stopwatch session ended."
+    },
+    "elapsed_seconds": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total elapsed stopwatch time in seconds."
+    },
+    "laps": {
+      "type": "array",
+      "description": "Recorded lap times in seconds.",
+      "items": { "type": "integer", "minimum": 0 }
+    }
+  }
+}

@@ -1,0 +1,9 @@
+timezone = "America/Los_Angeles"
+world_clock_zones = ["UTC", "America/New_York", "Europe/London", "Asia/Tokyo"]
+color_scheme = "classic"
+tick_rate = 10.0
+time_format = "24"
+show_seconds = true
+show_date = true
+pomodoro_work_minutes = 25
+pomodoro_break_minutes = 5

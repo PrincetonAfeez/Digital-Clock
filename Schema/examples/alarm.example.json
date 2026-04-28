@@ -1,0 +1,10 @@
+[
+  {
+    "id": "a1b2c3d4",
+    "at": { "hours": 7, "minutes": 30, "seconds": 0 },
+    "label": "wake up",
+    "enabled": true,
+    "snooze_minutes": 5,
+    "last_triggered_date": null
+  }
+]

@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.local/pyclock/cli.schema.json",
+  "title": "PyClock CLI Command Request",
+  "description": "Schema for a normalized representation of PyClock command-line requests.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "config": { "type": "string", "description": "Optional path to config TOML." },
+    "timezone": {
+      "type": "string",
+      "description": "Optional IANA timezone override.",
+      "pattern": "^(UTC|[A-Za-z_]+(?:/[A-Za-z0-9_+.-]+)+)$"
+    },
+    "time_format": { "type": "string", "enum": ["12", "24"] },
+    "no_color": { "type": "boolean", "default": false },
+    "tick_rate": { "type": "number", "exclusiveMinimum": 0 },
+    "command": {
+      "oneOf": [
+        { "$ref": "#/$defs/interactiveCommand" },
+        { "$ref": "#/$defs/nowCommand" },
+        { "$ref": "#/$defs/timerCommand" },
+        { "$ref": "#/$defs/alarmAddCommand" },
+        { "$ref": "#/$defs/alarmListCommand" },
+        { "$ref": "#/$defs/alarmRemoveCommand" },
+        { "$ref": "#/$defs/modeCommand" }
+      ],
+      "default": { "name": "interactive" }
+    }
+  },
+  "$defs": {
+    "durationText": {
+      "type": "string",
+      "description": "Duration such as 5m, 1h30m, 90s, 01:02:03, or raw seconds.",
+      "pattern": "^(\\d+|\\d{1,2}:\\d{2}(:\\d{2})?|(?=.+)(\\d+h)?(\\d+m)?(\\d+s)?)$"
+    },
+    "timeText": {
+      "type": "string",
+      "description": "Alarm time in HH:MM or HH:MM:SS format.",
+      "pattern": "^\\d{1,2}:\\d{2}(:\\d{2})?$"
+    },
+    "interactiveCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": { "name": { "const": "interactive" } }
+    },
+    "nowCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": { "name": { "const": "now" } }
+    },
+    "timerCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "duration"],
+      "properties": {
+        "name": { "const": "timer" },
+        "duration": { "$ref": "#/$defs/durationText" },
+        "label": { "type": "string", "default": "timer" }
+      }
+    },
+    "alarmAddCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "action", "time"],
+      "properties": {
+        "name": { "const": "alarm" },
+        "action": { "const": "add" },
+        "time": { "$ref": "#/$defs/timeText" },
+        "label": { "type": "string", "default": "" },
+        "snooze": { "type": "integer", "minimum": 1, "default": 5 }
+      }
+    },
+    "alarmListCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "action"],
+      "properties": {
+        "name": { "const": "alarm" },
+        "action": { "const": "list" }
+      }
+    },
+    "alarmRemoveCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "action", "id"],
+      "properties": {
+        "name": { "const": "alarm" },
+        "action": { "const": "remove" },
+        "id": { "type": "string", "minLength": 1 }
+      }
+    },
+    "modeCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": { "enum": ["world", "stopwatch", "pomodoro"] }
+      }
+    }
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.local/pyclock/config.schema.json",
+  "title": "PyClock Configuration",
+  "description": "JSON-shape schema for PyClock's config.toml values after TOML parsing.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "timezone": {
+      "type": "string",
+      "description": "Primary IANA time zone used by the clock. UTC is also accepted.",
+      "default": "UTC",
+      "examples": ["UTC", "America/Los_Angeles"],
+      "pattern": "^(UTC|[A-Za-z_]+(?:/[A-Za-z0-9_+.-]+)+)$"
+    },
+    "world_clock_zones": {
+      "type": "array",
+      "description": "List of IANA zones shown in world-clock mode.",
+      "default": ["UTC", "America/New_York", "Europe/London", "Asia/Tokyo"],
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^(UTC|[A-Za-z_]+(?:/[A-Za-z0-9_+.-]+)+)$"
+      }
+    },
+    "color_scheme": {
+      "type": "string",
+      "description": "Renderer color scheme name.",
+      "enum": ["classic", "amber", "mono", "rainbow-seconds"],
+      "default": "classic"
+    },
+    "tick_rate": {
+      "type": "number",
+      "description": "Main loop ticks per second.",
+      "exclusiveMinimum": 0,
+      "default": 10.0
+    },
+    "time_format": {
+      "description": "Clock display format. PyClock accepts both strings and integers.",
+      "default": "24",
+      "oneOf": [
+        { "type": "string", "enum": ["12", "24", "h12", "H12", "h24", "H24"] },
+        { "type": "integer", "enum": [12, 24] }
+      ]
+    },
+    "show_seconds": {
+      "type": "boolean",
+      "description": "Whether to show seconds in clock displays.",
+      "default": true
+    },
+    "show_date": {
+      "type": "boolean",
+      "description": "Whether to show the date line in clock mode.",
+      "default": true
+    },
+    "pomodoro_work_minutes": {
+      "type": "integer",
+      "description": "Work-session length for Pomodoro mode.",
+      "minimum": 1,
+      "default": 25
+    },
+    "pomodoro_break_minutes": {
+      "type": "integer",
+      "description": "Break-session length for Pomodoro mode.",
+      "minimum": 1,
+      "default": 5
+    }
+  }
+}

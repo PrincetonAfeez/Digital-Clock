@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.local/pyclock/state.schema.json",
+  "title": "PyClock ClockState Snapshot",
+  "description": "Schema for a JSON-serializable snapshot of PyClock's ClockState domain object.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["current", "timezone"],
+  "properties": {
+    "current": { "type": "string", "format": "date-time" },
+    "timezone": {
+      "type": "string",
+      "pattern": "^(UTC|[A-Za-z_]+(?:/[A-Za-z0-9_+.-]+)+)$"
+    },
+    "display_mode": {
+      "type": "string",
+      "enum": ["clock", "stopwatch", "timer", "world", "alarms", "pomodoro"],
+      "default": "clock"
+    },
+    "time_format": {
+      "type": "string",
+      "enum": ["12", "24"],
+      "default": "24"
+    },
+    "show_seconds": { "type": "boolean", "default": true },
+    "show_date": { "type": "boolean", "default": true },
+    "active_alarms": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/alarm" },
+      "default": []
+    },
+    "timers": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/timerState" },
+      "default": []
+    },
+    "stopwatch": { "$ref": "#/$defs/stopwatchState" },
+    "world_clock_zones": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^(UTC|[A-Za-z_]+(?:/[A-Za-z0-9_+.-]+)+)$"
+      },
+      "default": ["UTC", "America/New_York", "Europe/London", "Asia/Tokyo"]
+    },
+    "pomodoro": { "$ref": "#/$defs/pomodoroState" },
+    "help_visible": { "type": "boolean", "default": false },
+    "notifications": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": []
+    }
+  },
+  "$defs": {
+    "duration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["seconds"],
+      "properties": {
+        "seconds": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "timeOfDay": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["hours", "minutes"],
+      "properties": {
+        "hours": { "type": "integer", "minimum": 0, "maximum": 23 },
+        "minutes": { "type": "integer", "minimum": 0, "maximum": 59 },
+        "seconds": { "type": "integer", "minimum": 0, "maximum": 59, "default": 0 }
+      }
+    },
+    "alarm": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "at"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,64}$" },
+        "at": { "$ref": "#/$defs/timeOfDay" },
+        "label": { "type": "string", "default": "" },
+        "enabled": { "type": "boolean", "default": true },
+        "snooze_minutes": { "type": "integer", "minimum": 1, "default": 5 },
+        "last_triggered_date": {
+          "oneOf": [
+            { "type": "string", "format": "date" },
+            { "type": "null" }
+          ],
+          "default": null
+        }
+      }
+    },
+    "timerState": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "duration", "remaining"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "duration": { "$ref": "#/$defs/duration" },
+        "remaining": { "$ref": "#/$defs/duration" },
+        "label": { "type": "string", "default": "" },
+        "running": { "type": "boolean", "default": true },
+        "completed": { "type": "boolean", "default": false }
+      }
+    },
+    "stopwatchState": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "elapsed": { "$ref": "#/$defs/duration" },
+        "running": { "type": "boolean", "default": false },
+        "laps": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/duration" },
+          "default": []
+        }
+      },
+      "default": { "elapsed": { "seconds": 0 }, "running": false, "laps": [] }
+    },
+    "pomodoroState": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "work_duration": { "$ref": "#/$defs/duration" },
+        "break_duration": { "$ref": "#/$defs/duration" },
+        "remaining": { "$ref": "#/$defs/duration" },
+        "in_break": { "type": "boolean", "default": false },
+        "running": { "type": "boolean", "default": false },
+        "sessions_completed": { "type": "integer", "minimum": 0, "default": 0 }
+      },
+      "default": {
+        "work_duration": { "seconds": 1500 },
+        "break_duration": { "seconds": 300 },
+        "remaining": { "seconds": 1500 },
+        "in_break": false,
+        "running": false,
+        "sessions_completed": 0
+      }
+    }
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.local/pyclock/alarm.schema.json",
+  "title": "PyClock Persisted Alarms",
+  "description": "Schema for the alarms.json file used by JSONAlarmRepository.",
+  "type": "array",
+  "items": { "$ref": "#/$defs/alarm" },
+  "$defs": {
+    "timeOfDay": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["hours", "minutes"],
+      "properties": {
+        "hours": { "type": "integer", "minimum": 0, "maximum": 23 },
+        "minutes": { "type": "integer", "minimum": 0, "maximum": 59 },
+        "seconds": { "type": "integer", "minimum": 0, "maximum": 59, "default": 0 }
+      }
+    },
+    "alarm": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "at"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Short alarm id generated from a UUID.",
+          "pattern": "^[A-Za-z0-9_-]{1,64}$"
+        },
+        "at": { "$ref": "#/$defs/timeOfDay" },
+        "label": { "type": "string", "default": "" },
+        "enabled": { "type": "boolean", "default": true },
+        "snooze_minutes": { "type": "integer", "minimum": 1, "default": 5 },
+        "last_triggered_date": {
+          "description": "ISO date last triggered, or null if never triggered/snoozed.",
+          "oneOf": [
+            { "type": "string", "format": "date" },
+            { "type": "null" }
+          ],
+          "default": null
+        }
+      }
+    }
+  }
+}

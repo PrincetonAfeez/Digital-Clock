@@ -1,0 +1,28 @@
+{
+  "name": "pyclock-schema",
+  "repository": "PrincetonAfeez/Digital-Clock",
+  "schemaVersion": "1.0.0",
+  "draft": "https://json-schema.org/draft/2020-12/schema",
+  "schemas": [
+    {
+      "file": "pyclock-config.schema.json",
+      "purpose": "Configuration shape for config.toml after TOML parsing"
+    },
+    {
+      "file": "pyclock-alarm.schema.json",
+      "purpose": "Persisted alarms array stored in alarms.json"
+    },
+    {
+      "file": "pyclock-session.schema.json",
+      "purpose": "One JSON Lines record in sessions.jsonl"
+    },
+    {
+      "file": "pyclock-state.schema.json",
+      "purpose": "JSON-serializable ClockState snapshot"
+    },
+    {
+      "file": "pyclock-cli.schema.json",
+      "purpose": "Normalized CLI command request shape"
+    }
+  ]
+}
