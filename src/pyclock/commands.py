@@ -8,3 +8,10 @@ from pyclock.domain import ClockState, DisplayMode, Duration, TimeFormat, TimerS
 from pyclock.mode_controller import ModeController
 from pyclock.sessions import StopwatchSessionLog
 
+
+
+@dataclass
+class CommandContext:
+    stop_event: Event
+    session_log: StopwatchSessionLog | None = None
+    mode_controller: ModeController = ModeController()
