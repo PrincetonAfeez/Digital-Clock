@@ -51,3 +51,11 @@ class QuitCommand(Command):
         context.stop_event.set()
         return state
 
+class ToggleHelpCommand(Command):
+    key = "?"
+    description = "Toggle help"
+
+    def execute(self, state: ClockState, context: CommandContext) -> ClockState:
+        return replace(state, help_visible=not state.help_visible)
+
+
