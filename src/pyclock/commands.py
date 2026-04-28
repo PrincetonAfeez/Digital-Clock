@@ -59,3 +59,10 @@ class ToggleHelpCommand(Command):
         return replace(state, help_visible=not state.help_visible)
 
 
+class ToggleFormatCommand(Command):
+    key = "f"
+    description = "Toggle 12/24-hour time"
+
+    def execute(self, state: ClockState, context: CommandContext) -> ClockState:
+        next_format = TimeFormat.H12 if state.time_format is TimeFormat.H24 else TimeFormat.H24
+        return replace(state, time_format=next_format)
