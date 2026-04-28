@@ -42,3 +42,12 @@ class CommandRegistry:
     def help_lines(self) -> list[str]:
         return [f"{key:<4} {cmd.description}" for key, cmd in sorted(self._commands.items())]
 
+
+class QuitCommand(Command):
+    key = "q"
+    description = "Quit"
+
+    def execute(self, state: ClockState, context: CommandContext) -> ClockState:
+        context.stop_event.set()
+        return state
+
