@@ -147,3 +147,10 @@ class AddFiveMinuteTimerCommand(Command):
         )
         return replace(state, display_mode=DisplayMode.TIMER, timers=(*state.timers, timer))
 
+
+class ClearDoneTimersCommand(Command):
+    key = "c"
+    description = "Clear completed timers"
+
+    def execute(self, state: ClockState, context: CommandContext) -> ClockState:
+        return replace(state, timers=tuple(timer for timer in state.timers if not timer.completed))
