@@ -71,3 +71,27 @@ class InMemoryAlarmRepository(AlarmRepository):
     def save_all(self, alarms: tuple[Alarm, ...]) -> None:
         self._alarms = alarms
 
+class AlarmScheduler:
+    def __init__(self, repository: AlarmRepository) -> None:
+        self.repository = repository
+
+    def due(self, previous: datetime, current: datetime) -> tuple[Alarm, ...]:
+        alarms = self.repository.list()
+        due: list[Alarm] = []
+        updated: list[Alarm] = []
+
+        for alarm in alarms:
+            if not alarm.enabled:
+                updated.append(alarm)
+                continue
+
+            triggered_date = self._crossed_date(alarm, previous, current)
+            if triggered_date is not None:
+                due.append(alarm)
+                updated.append(replace(alarm, last_triggered_date=triggered_date))
+                continue
+            updated.append(alarm)
+
+        if due:
+            self.repository.save_all(tuple(updated))
+        return tuple(due)
