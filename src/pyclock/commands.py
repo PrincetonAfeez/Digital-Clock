@@ -103,3 +103,13 @@ class SetModeCommand(Command):
             state,
             display_mode=context.mode_controller.transition(state.display_mode, self.mode),
         )
+
+class StopwatchToggleCommand(Command):
+    key = " "
+    description = "Start/stop stopwatch or Pomodoro"
+
+    def execute(self, state: ClockState, context: CommandContext) -> ClockState:
+        if state.display_mode is DisplayMode.POMODORO:
+            return replace(state, pomodoro=state.pomodoro.toggle())
+        stopwatch = replace(state.stopwatch, running=not state.stopwatch.running)
+        return replace(state, stopwatch=stopwatch)
