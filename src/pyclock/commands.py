@@ -66,3 +66,12 @@ class ToggleFormatCommand(Command):
     def execute(self, state: ClockState, context: CommandContext) -> ClockState:
         next_format = TimeFormat.H12 if state.time_format is TimeFormat.H24 else TimeFormat.H24
         return replace(state, time_format=next_format)
+
+class ToggleSecondsCommand(Command):
+    key = "s"
+    description = "Toggle seconds"
+
+    def execute(self, state: ClockState, context: CommandContext) -> ClockState:
+        return replace(state, show_seconds=not state.show_seconds)
+
+
