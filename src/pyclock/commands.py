@@ -15,3 +15,12 @@ class CommandContext:
     stop_event: Event
     session_log: StopwatchSessionLog | None = None
     mode_controller: ModeController = ModeController()
+
+class Command(ABC):
+    key: str
+    description: str
+
+    @abstractmethod
+    def execute(self, state: ClockState, context: CommandContext) -> ClockState:
+
+
