@@ -33,3 +33,31 @@ class AlarmRepository(ABC):
         remaining = tuple(alarm for alarm in alarms if alarm.id != alarm_id)
         self.save_all(remaining)
         return len(remaining) != len(alarms)
+
+class JSONAlarmRepository(AlarmRepository):
+    def __init__(self, path: Path | None = None) -> None:
+        self.path = path or default_alarms_path()
+
+    def list(self) -> tuple[Alarm, ...]:
+        if not self.path.exists():
+            return ()
+        with self.path.open("r", encoding="utf-8") as handle:
+            raw = json.load(handle)
+        return tuple(_alarm_from_json(item) for item in raw)
+
+    def save_all(self, alarms: tuple[Alarm, ...]) -> None:
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        payload = [
+            {
+                **asdict(alarm),
+                "at": {
+                    "hours": alarm.at.hours,
+                    "minutes": alarm.at.minutes,
+                    "seconds": alarm.at.seconds,
+                },
+            }
+            for alarm in alarms
+        ]
+        with self.path.open("w", encoding="utf-8") as handle:
+            json.dump(payload, handle, indent=2)
+
