@@ -75,3 +75,10 @@ class ToggleSecondsCommand(Command):
         return replace(state, show_seconds=not state.show_seconds)
 
 
+class ToggleDateCommand(Command):
+    key = "d"
+    description = "Toggle date line"
+
+    def execute(self, state: ClockState, context: CommandContext) -> ClockState:
+        return replace(state, show_date=not state.show_date)
+
