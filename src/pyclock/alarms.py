@@ -116,3 +116,20 @@ class AlarmScheduler:
                 return target_date
         return None
 
+    def snooze(self, alarm_id: str, now: datetime) -> Alarm | None:
+        alarms = self.repository.list()
+        updated: list[Alarm] = []
+        snoozed: Alarm | None = None
+        for alarm in alarms:
+            if alarm.id == alarm_id:
+                target = now + timedelta(minutes=alarm.snooze_minutes)
+                snoozed = replace(
+                    alarm,
+                    at=Time(target.hour, target.minute, target.second),
+                    last_triggered_date=None,
+                )
+                updated.append(snoozed)
+            else:
+                updated.append(alarm)
+        self.repository.save_all(tuple(updated))
+        return snoozed
