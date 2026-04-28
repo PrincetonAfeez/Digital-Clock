@@ -61,3 +61,13 @@ class JSONAlarmRepository(AlarmRepository):
         with self.path.open("w", encoding="utf-8") as handle:
             json.dump(payload, handle, indent=2)
 
+class InMemoryAlarmRepository(AlarmRepository):
+    def __init__(self, alarms: tuple[Alarm, ...] = ()) -> None:
+        self._alarms = alarms
+
+    def list(self) -> tuple[Alarm, ...]:
+        return self._alarms
+
+    def save_all(self, alarms: tuple[Alarm, ...]) -> None:
+        self._alarms = alarms
+
