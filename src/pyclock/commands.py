@@ -82,3 +82,13 @@ class ToggleDateCommand(Command):
     def execute(self, state: ClockState, context: CommandContext) -> ClockState:
         return replace(state, show_date=not state.show_date)
 
+class NextModeCommand(Command):
+    key = "m"
+    description = "Next mode"
+
+    def execute(self, state: ClockState, context: CommandContext) -> ClockState:
+        return replace(
+            state,
+            display_mode=context.mode_controller.next(state.display_mode),
+        )
+
