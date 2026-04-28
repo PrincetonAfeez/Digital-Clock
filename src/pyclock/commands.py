@@ -131,3 +131,19 @@ class StopwatchLapCommand(Command):
 
     def execute(self, state: ClockState, context: CommandContext) -> ClockState:
         return replace(state, stopwatch=state.stopwatch.lap())
+
+
+class AddFiveMinuteTimerCommand(Command):
+    key = "t"
+    description = "Add a 5-minute timer"
+
+    def execute(self, state: ClockState, context: CommandContext) -> ClockState:
+        duration = Duration.from_hms(minutes=5)
+        timer = TimerState(
+            id=f"timer-{len(state.timers) + 1}",
+            duration=duration,
+            remaining=duration,
+            label="quick timer",
+        )
+        return replace(state, display_mode=DisplayMode.TIMER, timers=(*state.timers, timer))
+
