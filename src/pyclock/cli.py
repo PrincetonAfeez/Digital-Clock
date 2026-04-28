@@ -27,6 +27,7 @@ from pyclock.timer_runner import run_one_shot_timer
 
 
 def build_parser() -> argparse.ArgumentParser:
+    """Build the parser."""
     parser = argparse.ArgumentParser(prog="pyclock", description="Terminal digital clock")
     parser.add_argument("--config", type=Path, help="Path to config TOML")
     parser.add_argument("--timezone", help="IANA timezone, e.g. America/Los_Angeles")
@@ -58,6 +59,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Main entry point."""
     parser = build_parser()
     args = parser.parse_args(argv)
     config = load_config(args.config)
@@ -101,6 +103,7 @@ def main(argv: list[str] | None = None) -> int:
 
 
 def _apply_flags(config: Config, args: argparse.Namespace) -> Config:
+    """Apply the flags to the config."""
     values = {}
     if args.timezone:
         values["timezone"] = args.timezone
@@ -112,6 +115,7 @@ def _apply_flags(config: Config, args: argparse.Namespace) -> Config:
 
 
 def _initial_state(config: Config, now: datetime) -> ClockState:
+    """Return the initial state."""
     work_duration = Duration.from_hms(minutes=config.pomodoro_work_minutes)
     break_duration = Duration.from_hms(minutes=config.pomodoro_break_minutes)
     return ClockState(
@@ -130,6 +134,7 @@ def _initial_state(config: Config, now: datetime) -> ClockState:
 
 
 def _run_alarm_command(args: argparse.Namespace) -> int:
+    """Run the alarm command."""
     repository = JSONAlarmRepository()
     if args.alarm_command == "add":
         alarm = repository.add(Time.parse(args.time), label=args.label, snooze_minutes=args.snooze)
