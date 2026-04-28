@@ -20,6 +20,7 @@ from pyclock.time_sources import TimeSource
 
 
 class ClockLoop:
+    """Clock loop class."""
     def __init__(
         self,
         state: ClockState,
@@ -44,6 +45,7 @@ class ClockLoop:
         self.context = CommandContext(self.stop_event, StopwatchSessionLog())
 
     def run(self) -> int:
+        """Run the clock loop."""
         previous_signal = signal.getsignal(signal.SIGINT)
 
         def handle_sigint(signum: int, frame: object) -> None:
@@ -77,6 +79,7 @@ class ClockLoop:
         return 0
 
     def _tick(self, now: datetime, delta: Duration) -> ClockState:
+        """Tick the clock."""
         previous_timers = {timer.id: timer for timer in self.state.timers}
         state = replace(
             self.state,
@@ -99,6 +102,7 @@ class ClockLoop:
         return state
 
     def _drain_events(self) -> None:
+        """Drain the events."""
         while True:
             try:
                 key = self.events.get_nowait()
