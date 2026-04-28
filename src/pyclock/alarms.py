@@ -95,3 +95,24 @@ class AlarmScheduler:
         if due:
             self.repository.save_all(tuple(updated))
         return tuple(due)
+
+    def _crossed_date(self, alarm: Alarm, previous: datetime, current: datetime) -> str | None:
+        day_count = (current.date() - previous.date()).days
+        for offset in range(day_count + 1):
+            day = previous.date() + timedelta(days=offset)
+            target = current.replace(
+                year=day.year,
+                month=day.month,
+                day=day.day,
+                hour=alarm.at.hours,
+                minute=alarm.at.minutes,
+                second=alarm.at.seconds,
+                microsecond=0,
+            )
+            target_date = target.date().isoformat()
+            if alarm.last_triggered_date == target_date:
+                continue
+            if previous <= target <= current:
+                return target_date
+        return None
+
