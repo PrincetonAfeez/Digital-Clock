@@ -154,3 +154,27 @@ class ClearDoneTimersCommand(Command):
 
     def execute(self, state: ClockState, context: CommandContext) -> ClockState:
         return replace(state, timers=tuple(timer for timer in state.timers if not timer.completed))
+
+
+def default_registry() -> CommandRegistry:
+    return CommandRegistry(
+        [
+            QuitCommand(),
+            ToggleHelpCommand(),
+            ToggleFormatCommand(),
+            ToggleSecondsCommand(),
+            ToggleDateCommand(),
+            NextModeCommand(),
+            SetModeCommand("1", DisplayMode.CLOCK, "Clock mode"),
+            SetModeCommand("2", DisplayMode.STOPWATCH, "Stopwatch mode"),
+            SetModeCommand("3", DisplayMode.TIMER, "Timer mode"),
+            SetModeCommand("4", DisplayMode.WORLD_CLOCK, "World clock mode"),
+            SetModeCommand("5", DisplayMode.ALARM_LIST, "Alarm list mode"),
+            SetModeCommand("6", DisplayMode.POMODORO, "Pomodoro mode"),
+            StopwatchToggleCommand(),
+            StopwatchResetCommand(),
+            StopwatchLapCommand(),
+            AddFiveMinuteTimerCommand(),
+            ClearDoneTimersCommand(),
+        ]
+    )
