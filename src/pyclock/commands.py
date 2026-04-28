@@ -92,3 +92,14 @@ class NextModeCommand(Command):
             display_mode=context.mode_controller.next(state.display_mode),
         )
 
+class SetModeCommand(Command):
+    def __init__(self, key: str, mode: DisplayMode, description: str) -> None:
+        self.key = key
+        self.mode = mode
+        self.description = description
+
+    def execute(self, state: ClockState, context: CommandContext) -> ClockState:
+        return replace(
+            state,
+            display_mode=context.mode_controller.transition(state.display_mode, self.mode),
+        )
