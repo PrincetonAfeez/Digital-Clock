@@ -62,18 +62,21 @@ SCHEMES: dict[str, ColorScheme] = {
 
 
 class Renderer(ABC):
+    """Renderer class."""
     @abstractmethod
     def render(self, state: ClockState) -> str:
         """Render a state snapshot without touching I/O."""
 
 
 def format_datetime(value: datetime, time_format: TimeFormat, show_seconds: bool = True) -> str:
+    """Format the datetime."""
     if time_format is TimeFormat.H24:
         return value.strftime("%H:%M:%S" if show_seconds else "%H:%M")
     return value.strftime("%I:%M:%S %p" if show_seconds else "%I:%M %p")
 
 
 def _big_text(text: str) -> str:
+    """Return the big text."""
     glyphs = [ASCII_FONT.get(char.upper(), ASCII_FONT[" "]) for char in text]
     lines = []
     for row in range(5):
@@ -82,11 +85,13 @@ def _big_text(text: str) -> str:
 
 
 def _mode_title(state: ClockState) -> str:
+    """Return the mode title."""
     mode = state.display_mode.value.replace("_", " ").title()
     return f"PyClock | {mode} | {state.timezone}"
 
 
 def _timer_line(index: int, timer: TimerState) -> str:
+    """Return the timer line."""
     label = timer.label or f"timer {index}"
     remaining = timer.remaining
     status = "done" if timer.completed else "running"
@@ -99,10 +104,12 @@ class BigDigitRenderer(Renderer):
         scheme: ColorScheme | None = None,
         command_help: list[str] | None = None,
     ) -> None:
+        """Initialize the big digit renderer."""
         self.scheme = scheme or SCHEMES["classic"]
         self.command_help = command_help or []
 
     def render(self, state: ClockState) -> str:
+        """Render the big digit renderer."""
         body = {
             DisplayMode.CLOCK: self._clock,
             DisplayMode.STOPWATCH: self._stopwatch,
@@ -122,6 +129,7 @@ class BigDigitRenderer(Renderer):
         return "\n\n".join(part for part in parts if part)
 
     def _clock(self, state: ClockState) -> str:
+        """Render the clock."""
         text = format_datetime(state.current, state.time_format, state.show_seconds)
         rendered = self.scheme.paint(_big_text(text))
         if state.show_date:
@@ -129,6 +137,7 @@ class BigDigitRenderer(Renderer):
         return rendered
 
     def _stopwatch(self, state: ClockState) -> str:
+        """Render the stopwatch."""
         lines = [self.scheme.paint(_big_text(format(state.stopwatch.elapsed, "hms")))]
         state_label = "running" if state.stopwatch.running else "stopped"
         lines.append(f"Stopwatch {state_label}")
@@ -139,6 +148,7 @@ class BigDigitRenderer(Renderer):
         return "\n".join(lines)
 
     def _timer(self, state: ClockState) -> str:
+        """Render the timers."""
         if not state.timers:
             return "No timers. Use `pyclock timer 5m` for a one-shot timer."
         lines = [self.scheme.paint(_big_text(format(state.timers[0].remaining, "hms")))]
@@ -146,6 +156,7 @@ class BigDigitRenderer(Renderer):
         return "\n".join(lines)
 
     def _world_clock(self, state: ClockState) -> str:
+        """Render the world clock."""
         lines = []
         for zone_name in state.world_clock_zones:
             try:
@@ -157,6 +168,7 @@ class BigDigitRenderer(Renderer):
         return "\n".join(lines)
 
     def _alarms(self, state: ClockState) -> str:
+        """Render the alarms."""
         if not state.active_alarms:
             return "No alarms saved."
         lines = ["ID       Time      Label"]
@@ -167,6 +179,7 @@ class BigDigitRenderer(Renderer):
         return "\n".join(lines)
 
     def _pomodoro(self, state: ClockState) -> str:
+        """Render the Pomodoro phase."""
         phase = "Break" if state.pomodoro.in_break else "Work"
         running = "running" if state.pomodoro.running else "paused"
         return "\n".join(
@@ -177,16 +190,19 @@ class BigDigitRenderer(Renderer):
         )
 
     def _help(self) -> str:
+        """Return the help text."""
         if not self.command_help:
             return "No keys registered."
         return "Keys\n" + "\n".join(self.command_help)
 
 
 class CompactRenderer(Renderer):
+    """Compact renderer class."""
     def __init__(self, scheme: ColorScheme | None = None) -> None:
         self.scheme = scheme or SCHEMES["mono"]
 
     def render(self, state: ClockState) -> str:
+        """Render the compact renderer."""
         if state.display_mode is DisplayMode.WORLD_CLOCK:
             return " | ".join(_compact_zone_line(state, zone) for zone in state.world_clock_zones)
         rendered_time = format_datetime(state.current, state.time_format, state.show_seconds)
@@ -195,12 +211,14 @@ class CompactRenderer(Renderer):
 
 class MinimalRenderer(Renderer):
     def render(self, state: ClockState) -> str:
+        """Render the minimal renderer."""
         if state.display_mode is DisplayMode.WORLD_CLOCK:
             return "\n".join(_minimal_zone_line(state, zone) for zone in state.world_clock_zones)
         return format_datetime(state.current, state.time_format, state.show_seconds)
 
 
 def _zone_time(state: ClockState, zone: str) -> str:
+    """Return the zone time."""
     try:
         local = state.current.astimezone(ZoneInfo(zone))
     except ZoneInfoNotFoundError:
