@@ -27,3 +27,9 @@ class AlarmRepository(ABC):
         alarm = Alarm(uuid.uuid4().hex[:8], at, label=label, snooze_minutes=snooze_minutes)
         self.save_all((*alarms, alarm))
         return alarm
+
+    def remove(self, alarm_id: str) -> bool:
+        alarms = self.list()
+        remaining = tuple(alarm for alarm in alarms if alarm.id != alarm_id)
+        self.save_all(remaining)
+        return len(remaining) != len(alarms)
