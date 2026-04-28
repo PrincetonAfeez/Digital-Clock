@@ -113,3 +113,14 @@ class StopwatchToggleCommand(Command):
             return replace(state, pomodoro=state.pomodoro.toggle())
         stopwatch = replace(state.stopwatch, running=not state.stopwatch.running)
         return replace(state, stopwatch=stopwatch)
+
+class StopwatchResetCommand(Command):
+    key = "r"
+    description = "Reset stopwatch/Pomodoro"
+
+    def execute(self, state: ClockState, context: CommandContext) -> ClockState:
+        if state.display_mode is DisplayMode.POMODORO:
+            return replace(state, pomodoro=state.pomodoro.reset())
+        if context.session_log and state.stopwatch.elapsed.seconds:
+            context.session_log.append(state.stopwatch, state.current)
+        return replace(state, stopwatch=type(state.stopwatch)())
