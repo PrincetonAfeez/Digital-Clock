@@ -124,3 +124,10 @@ class StopwatchResetCommand(Command):
         if context.session_log and state.stopwatch.elapsed.seconds:
             context.session_log.append(state.stopwatch, state.current)
         return replace(state, stopwatch=type(state.stopwatch)())
+
+class StopwatchLapCommand(Command):
+    key = "l"
+    description = "Record stopwatch lap"
+
+    def execute(self, state: ClockState, context: CommandContext) -> ClockState:
+        return replace(state, stopwatch=state.stopwatch.lap())
