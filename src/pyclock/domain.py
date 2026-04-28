@@ -13,6 +13,8 @@ from pyclock.exceptions import InvalidDurationError
 
 
 class DisplayMode(Enum):
+    """Display mode enumeration."""
+
     CLOCK = "clock"
     STOPWATCH = "stopwatch"
     TIMER = "timer"
@@ -22,14 +24,18 @@ class DisplayMode(Enum):
 
 
 class TimeFormat(Enum):
+    """Time format enumeration."""
+
     H12 = "12"
     H24 = "24"
 
     def __str__(self) -> str:
+        """Return the time format as a string."""
         return "12-hour" if self is TimeFormat.H12 else "24-hour"
 
     @classmethod
     def parse(cls, value: str | int | None) -> Self:
+        """Parse a time format string."""
         if value in (12, "12", "h12", "H12"):
             return cls.H12
         if value in (24, "24", "h24", "H24", None):
@@ -47,6 +53,7 @@ class Time:
     seconds: int = 0
 
     def __post_init__(self) -> None:
+        """Validate the time."""
         if not 0 <= self.hours <= 23:
             msg = "hours must be in 0..23"
             raise ValueError(msg)
@@ -59,10 +66,12 @@ class Time:
 
     @classmethod
     def from_datetime(cls, value: datetime) -> Self:
+        """Create a time from a datetime object."""
         return cls(value.hour, value.minute, value.second)
 
     @classmethod
     def parse(cls, value: str) -> Self:
+        """Parse a time string."""
         match = re.fullmatch(r"\s*(\d{1,2}):(\d{2})(?::(\d{2}))?\s*", value)
         if not match:
             msg = "time must look like HH:MM or HH:MM:SS"
@@ -71,12 +80,15 @@ class Time:
         return cls(int(hours), int(minutes), int(seconds))
 
     def to_time(self) -> time:
+        """Convert the time to a time object."""
         return time(self.hours, self.minutes, self.seconds)
 
     def total_seconds(self) -> int:
+        """Return the total number of seconds."""
         return self.hours * 3600 + self.minutes * 60 + self.seconds
 
     def __format__(self, spec: str) -> str:
+        """Return the time as a string."""
         if spec in ("", "24"):
             return f"{self.hours:02d}:{self.minutes:02d}:{self.seconds:02d}"
         if spec == "hm":
@@ -103,26 +115,32 @@ class Duration:
     seconds: int
 
     def __post_init__(self) -> None:
+        """Validate the duration."""
         if self.seconds < 0:
             msg = "duration cannot be negative"
             raise InvalidDurationError(msg)
 
     @classmethod
     def from_hms(cls, hours: int = 0, minutes: int = 0, seconds: int = 0) -> Self:
+        """Create a duration from hours, minutes, and seconds."""
         return cls(hours * 3600 + minutes * 60 + seconds)
 
     @classmethod
     def from_timedelta(cls, value: timedelta) -> Self:
+        """Convert a timedelta to a duration."""
         total = int(value.total_seconds())
         return cls(max(total, 0))
 
     def to_timedelta(self) -> timedelta:
+        """Convert this duration to a timedelta."""
         return timedelta(seconds=self.seconds)
 
     def clamp_subtract(self, other: Duration) -> Duration:
+        """Subtract a duration or timedelta from this duration, clamping to zero."""
         return Duration(max(self.seconds - other.seconds, 0))
 
     def __add__(self, other: object) -> Duration:
+        """Add a duration or timedelta to this duration."""
         if isinstance(other, Duration):
             return Duration(self.seconds + other.seconds)
         if isinstance(other, timedelta):
@@ -130,6 +148,7 @@ class Duration:
         return NotImplemented
 
     def __sub__(self, other: object) -> Duration:
+        """Subtract a duration or timedelta from this duration."""
         if isinstance(other, Duration):
             result = self.seconds - other.seconds
         elif isinstance(other, timedelta):
@@ -142,6 +161,7 @@ class Duration:
         return Duration(result)
 
     def __lt__(self, other: object) -> bool:
+        """Compare durations."""
         if not isinstance(other, Duration):
             return NotImplemented
         return self.seconds < other.seconds
@@ -158,6 +178,7 @@ class Duration:
         return self.seconds > 0
 
     def __format__(self, spec: str) -> str:
+        """Return the duration as a string."""
         hours, remainder = divmod(self.seconds, 3600)
         minutes, seconds = divmod(remainder, 60)
         if spec in ("", "hms"):
@@ -178,6 +199,7 @@ class Duration:
         raise ValueError(msg)
 
     def __str__(self) -> str:
+        """Return the duration as a compact string."""
         return format(self, "compact")
 
 
@@ -221,6 +243,8 @@ def parse_duration(value: str) -> Duration:
 
 @dataclass(frozen=True)
 class Alarm:
+    """An alarm that can be triggered at a specific time."""
+
     id: str
     at: Time
     label: str = ""
@@ -234,6 +258,8 @@ class Alarm:
 
 @dataclass(frozen=True)
 class TimerState:
+    """State of a one-shot timer."""
+
     id: str
     duration: Duration
     remaining: Duration
@@ -242,6 +268,7 @@ class TimerState:
     completed: bool = False
 
     def tick(self, delta: Duration) -> TimerState:
+        """Tick the timer state."""
         if not self.running or self.completed:
             return self
         remaining = self.remaining.clamp_subtract(delta)
@@ -250,21 +277,27 @@ class TimerState:
 
 @dataclass(frozen=True)
 class StopwatchState:
+    """State of the stopwatch."""
+
     elapsed: Duration = field(default_factory=lambda: Duration(0))
     running: bool = False
     laps: tuple[Duration, ...] = ()
 
     def tick(self, delta: Duration) -> StopwatchState:
+        """Tick the stopwatch state."""
         if not self.running:
             return self
         return replace(self, elapsed=self.elapsed + delta)
 
     def lap(self) -> StopwatchState:
+        """Add a lap to the stopwatch."""
         return replace(self, laps=(self.elapsed, *self.laps))
 
 
 @dataclass(frozen=True)
 class PomodoroState:
+    """State of the Pomodoro timer."""
+
     work_duration: Duration = field(default_factory=lambda: Duration.from_hms(minutes=25))
     break_duration: Duration = field(default_factory=lambda: Duration.from_hms(minutes=5))
     remaining: Duration = field(default_factory=lambda: Duration.from_hms(minutes=25))
@@ -273,6 +306,7 @@ class PomodoroState:
     sessions_completed: int = 0
 
     def tick(self, delta: Duration) -> PomodoroState:
+        """Tick the Pomodoro state."""
         if not self.running:
             return self
         remaining = self.remaining.clamp_subtract(delta)
@@ -288,9 +322,11 @@ class PomodoroState:
         return replace(self, remaining=self.break_duration, in_break=True)
 
     def toggle(self) -> PomodoroState:
+        """Toggle the running state of the Pomodoro."""
         return replace(self, running=not self.running)
 
     def reset(self) -> PomodoroState:
+        """Reset the Pomodoro state to the initial work duration."""
         return replace(self, remaining=self.work_duration, in_break=False, running=False)
 
 
@@ -314,7 +350,9 @@ class ClockState:
 
     @property
     def current_time(self) -> Time:
+        """The current time of day."""
         return Time.from_datetime(self.current)
 
     def with_notification(self, message: str) -> ClockState:
+        """Add a notification to the state."""
         return replace(self, notifications=(message, *self.notifications[:3]))
