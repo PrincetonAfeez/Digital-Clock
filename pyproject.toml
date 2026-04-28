@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyclock"
+version = "0.1.0"
+description = "A terminal digital clock with stopwatch, timers, alarms, and world-clock views."
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{ name = "PyClock" }]
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "hypothesis>=6",
+    "mypy>=1.10",
+    "ruff>=0.6",
+]
+
+[project.scripts]
+pyclock = "pyclock.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+packages = ["pyclock"]
