@@ -133,3 +133,26 @@ class AlarmScheduler:
                 updated.append(alarm)
         self.repository.save_all(tuple(updated))
         return snoozed
+
+def _alarm_from_json(item: dict[str, object]) -> Alarm:
+    raw_time = item["at"]
+    if not isinstance(raw_time, dict):
+        msg = "alarm at field must be an object"
+        raise ValueError(msg)
+    time_payload = cast(dict[str, object], raw_time)
+    return Alarm(
+        id=str(item["id"]),
+        at=Time(
+            int(str(time_payload["hours"])),
+            int(str(time_payload["minutes"])),
+            int(str(time_payload.get("seconds", 0))),
+        ),
+        label=str(item.get("label", "")),
+        enabled=bool(item.get("enabled", True)),
+        snooze_minutes=int(str(item.get("snooze_minutes", 5))),
+        last_triggered_date=(
+            str(item["last_triggered_date"])
+            if item.get("last_triggered_date") is not None
+            else None
+        ),
+    )
